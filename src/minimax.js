@@ -114,10 +114,22 @@ var heuristic = function(state, maximizingPlayer){
     var minimizingPlayer = (maximizingPlayer == 'x') ? 'o' : 'x';
 
 	//An example.
-    var linesOfLengthTwoForX = state.numLines(2, 'x')
+	var linesOfLengthFourForMax = state.numLines(4, maximizingPlayer);
+	var linesOfLengthThreeForMax = state.numLines(3, maximizingPlayer);
+    var linesOfLengthTwoForMax = state.numLines(2, maximizingPlayer);
+
+    var maxBoardScore = (linesOfLengthFourForMax * 10) + (linesOfLengthThreeForMax * 3) + linesOfLengthTwoForMax;
+
+    var linesOfLengthFourForMin = state.numLines(4, minimizingPlayer);
+    var linesOfLengthThreeForMin = state.numLines(3, minimizingPlayer);
+    var linesOfLengthTwoForMin = state.numLines(2, minimizingPlayer);
+
+    var minBoardScore = (linesOfLengthFourForMin * 10) + (linesOfLengthThreeForMin * 3) + linesOfLengthTwoForMin;
+
+    var boardScore = maxBoardScore - minBoardScore;
 
     //Your code here.  Don't return random, obviously.
-	return Math.random()
+	return boardScore;
 }
 
 
@@ -142,11 +154,41 @@ which returns whether the next moving player is 'x' or 'o',
 to see if you are maximizing or minimizing.
 */
 var minimax = function(state, depth, maximizingPlayer){
-	var minimizingPlayer = (state.maximizingPlayer == 'x') ? 'o' : 'x';
+	let isMyTurn = (depth % 2 === 1);
+	var minimizingPlayer = (maximizingPlayer == 'x') ? 'o' : 'x';
 	var possibleStates = state.nextStates();
 	var currentPlayer = state.nextMovePlayer;
+	console.log("CURRENT AND MAXING: ", currentPlayer, maximizingPlayer);
+	console.log("CURRENT AND MINNING: ", currentPlayer, minimizingPlayer);
+	
+	let myTurn = (currentPlayer === maximizingPlayer);
 	//Your code here.
-	return Math.random();
+	let opponentAccumulator = 0;
+	let myAccumulator = 0;
+
+	if (isMyTurn) {
+		if (depth === 0 || !possibleStates.length) {
+			myAccumulator = heuristic(state, maximizingPlayer);
+		} else {
+			for (let i = 0; i < possibleStates.length; i++) {
+				opponentAccumulator += minimax(possibleStates[i], depth - 1, minimizingPlayer);
+			}
+		}
+	}
+
+	else {
+		if (depth === 0 || !possibleStates.length) {
+			opponentAccumulator = heuristic(state, maximizingPlayer);
+		} else {
+			for (let i = 0; i < possibleStates.length; i++) {
+				myAccumulator += minimax(possibleStates[i], depth - 1, minimizingPlayer);
+			}
+		}	
+	}
+
+	let total = (opponentAccumulator < 0) ? (myAccumulator + opponentAccumulator) : (myAccumulator - opponentAccumulator);
+
+	return total;
 }
 
 
